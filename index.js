@@ -3,6 +3,7 @@ import { parse } from "csv-parse";
 import { jsPDF } from "jspdf";
 
 const Y_START_POSITION = 20;
+const X_START_POSITION = 10;
 const LINE_HEIGHT = 10;
 const HEADER_FONT_SIZE = 18;
 const BODY_FONT_SIZE = 12;
@@ -63,7 +64,7 @@ const parseSheet = async (sheetName) => {
       `Watch ${lab["Module Title (for Tech Team)"]} by ${
         lab["Event Start Date/Time"].split(" ")[0]
       }`,
-      10,
+      X_START_POSITION,
       yPosition
     );
     doc.setFont("helvetica", "normal");
@@ -76,7 +77,7 @@ const parseSheet = async (sheetName) => {
         .replace(/\([^)]*\)/g, "")
         .replace(/\s+/g, " ")
         .trim()}`,
-      10,
+      X_START_POSITION,
       yPosition
     );
     yPosition += LINE_HEIGHT;
@@ -90,21 +91,23 @@ const parseSheet = async (sheetName) => {
   doc.text("DM Part 1 Milestone Due Dates", 10, yPosition);
   yPosition += 15;
   doc.setFontSize(BODY_FONT_SIZE);
-  doc.setFont("helvetica", "normal");
 
   records.deliverables.slice(0, 12).forEach((deliverable, idx) => {
+    doc.setFont("helvetica", "bold");
     console.log(deliverable);
+    let title = `${deliverable[
+      "Topic:    📅   LiveLab, 🌐  ICC Topic, 🎯  Milestone, or 🚀  Portfolio Project"
+    ]
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()}`;
+    doc.text(title, X_START_POSITION, yPosition);
+
+    let titleWidth = doc.getTextWidth(title);
+    doc.setFont("helvetica", "normal");
     doc.text(
-      `${deliverable[
-        "Topic:    📅   LiveLab, 🌐  ICC Topic, 🎯  Milestone, or 🚀  Portfolio Project"
-      ]
-        .replace(/[^a-zA-Z0-9 ]/g, "")
-        .replace(/\s+/g, " ")
-        .trim()} due ${deliverable["Event Start Date/Time"].replace(
-        " ",
-        " @ "
-      )} CST`,
-      10,
+      `  - ${deliverable["Event Start Date/Time"].replace(" ", " @ ")} CT`,
+      X_START_POSITION + titleWidth,
       yPosition
     );
     yPosition += LINE_HEIGHT;
