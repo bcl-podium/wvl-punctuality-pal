@@ -1,0 +1,18 @@
+{
+  "name": "wave-whisperer",
+  "version": "1.0.0",
+  "description": "Simplify LL schedule sheets",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"It works great, trust me ;)\" && exit 1",
+    "start": "node index.js"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "^5.5.3",
+    "jspdf": "^2.5.1"
+  }
+}
