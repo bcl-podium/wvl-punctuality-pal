@@ -61,14 +61,14 @@ const generatePDF = async (sheet) => {
   const doc = new jsPDF();
 
   const addImageFooter = () => {
-    const image = fs.readFileSync(__dirname + "img/gtx-stacked.png", "base64");
+    const image = fs.readFileSync(__dirname + "img/gca-dark.png", "base64");
     const imageData = `data:image/png;base64,${image}`;
     doc.addImage(
       imageData,
       "png",
-      doc.getPageWidth() - 45,
+      doc.getPageWidth() - 50,
       doc.getPageHeight() - 20,
-      35,
+      40,
       10
     );
   };
@@ -126,6 +126,24 @@ const generatePDF = async (sheet) => {
   doc.save(`pdf-out/${sheet.split(".")[0].replace(/\[[^\]]*\]/g, "")}.pdf`);
   console.info(`${sheet} saved as PDF!`);
 };
+
+function sectionInfo(file) {
+  const splitFilename = file
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .split(" ")
+    .filter((item) => item !== "");
+
+  const info = {
+    term: TERMS[splitFilename[0]],
+    year: `20${splitFilename[1]}`,
+    track: TRACKS[splitFilename[2]],
+    wave: splitFilename[4],
+    section: splitFilename[5],
+  };
+
+  console.log(info);
+  return info;
+}
 
 const main = () => {
   try {
