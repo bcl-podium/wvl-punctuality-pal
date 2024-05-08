@@ -1,7 +1,7 @@
 {
-  "name": "wave-whisperer",
+  "name": "wvl-punctuality-pal",
   "version": "1.0.0",
-  "description": "Simplify LL schedule sheets",
+  "description": "Create WVL schedule PDFs",
   "main": "index.js",
   "scripts": {
     "test": "echo \"It works great, trust me ;)\" && exit 1",

@@ -123,7 +123,7 @@ const generatePDF = async (sheet) => {
   });
   addImageFooter();
 
-  doc.save(`${sheet.split(".")[0].replace(/\[[^\]]*\]/g, "")}.pdf`);
+  doc.save(`pdf-out/${sheet.split(".")[0].replace(/\[[^\]]*\]/g, "")}.pdf`);
   console.info(`${sheet} saved as PDF!`);
 };
 
@@ -133,9 +133,11 @@ const main = () => {
       if (err) {
         console.error(err);
       } else {
-        sheets.forEach((sheet) => {
-          generatePDF(sheet);
-        });
+        sheets
+          .filter((item) => !/(^|\/)\.[^\/\.]/g.test(item))
+          .forEach((sheet) => {
+            generatePDF(sheet);
+          });
       }
     });
   } catch (err) {
