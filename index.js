@@ -7,13 +7,24 @@ const X_START_POSITION = 10;
 const LINE_HEIGHT = 10;
 const HEADER_FONT_SIZE = 18;
 const BODY_FONT_SIZE = 12;
+const TRACKS = {
+  WD: "Coding for Web",
+  DA: "Data Analytics",
+  DC: "Coding for Data",
+  DM: "Digital Marketing",
+};
+const TERMS = {
+  SP: "Spring",
+  SU: "Summer",
+  FA: "Fall",
+};
 
 const __dirname = new URL(".", import.meta.url).pathname;
-const sheetName = "SP '24 - DM - Wave 1 - A [Calendar].csv";
 
 const parseSheet = async (sheetName) => {
   const liveLabs = [];
   const deliverables = [];
+  console.info(`Now parsing ${sheetName}`);
   const parser = fs.createReadStream(`${__dirname}sheets/${sheetName}`).pipe(
     parse({
       bom: true,
@@ -40,78 +51,96 @@ const parseSheet = async (sheetName) => {
   }
   return {
     liveLabs: liveLabs,
-    liveLabCount: liveLabs.length,
     deliverables: deliverables,
   };
 };
 
-(async () => {
-  const records = await parseSheet(sheetName);
+// CREATE PDF
+const generatePDF = async (sheet) => {
+  const records = await parseSheet(sheet);
   const doc = new jsPDF();
+
+  const addImageFooter = () => {
+    const image = fs.readFileSync(__dirname + "gtx-stacked.png", "base64");
+    const imageData = `data:image/png;base64,${image}`;
+    doc.addImage(
+      imageData,
+      "png",
+      doc.getPageWidth() - 45,
+      doc.getPageHeight() - 20,
+      35,
+      10
+    );
+  };
+
   let yPosition = Y_START_POSITION;
-  console.log(records.liveLabs[1]);
 
   // Watch-by dates
   doc.setFontSize(HEADER_FONT_SIZE);
   doc.setFont("helvetica", "bold");
-  doc.text("DM Part 1 SkillBuilder Watch-By Schedule", 10, yPosition);
+  doc.text(
+    "Part 2 SkillBuilder Watch-By Schedule",
+    X_START_POSITION,
+    yPosition
+  );
   yPosition += 15;
   doc.setFontSize(BODY_FONT_SIZE);
 
-  records.liveLabs.slice(0, 12).forEach((lab, idx) => {
-    doc.setFont("helvetica", "bold");
-    doc.text(
-      `Watch ${lab["Module Title (for Tech Team)"]} by ${
-        lab["Event Start Date/Time"].split(" ")[0]
-      }`,
-      X_START_POSITION,
-      yPosition
-    );
-    doc.setFont("helvetica", "normal");
-    yPosition += LINE_HEIGHT;
-    doc.text(
-      `before LiveLab ${lab[
-        "Topic:    📅   LiveLab, 🌐  ICC Topic, 🎯  Milestone, or 🚀  Portfolio Project"
-      ]
-        .replace(/[^a-zA-Z0-9(). ]/g, "")
-        .replace(/\([^)]*\)/g, "")
+  records.liveLabs.slice(12).forEach((lab, idx) => {
+    let currentLineWidth;
+
+    if (lab["Module Title (for Tech Team)"]) {
+      doc.setFont("helvetica", "normal");
+      doc.text("Watch ", X_START_POSITION, yPosition);
+      currentLineWidth = doc.getTextWidth("Watch ");
+
+      doc.setFont("helvetica", "bold");
+      let moduleTitle = lab["Module Title (for Tech Team)"]
+        .replace(/[^a-zA-Z0-9:\- ]/g, "")
         .replace(/\s+/g, " ")
-        .trim()}`,
-      X_START_POSITION,
-      yPosition
-    );
-    yPosition += LINE_HEIGHT;
+        .trim();
+      doc.text(moduleTitle, X_START_POSITION + currentLineWidth, yPosition);
+      currentLineWidth += doc.getTextWidth(moduleTitle);
+
+      doc.setFont("helvetica", "normal");
+
+      doc.text(
+        "  before LiveLab on ",
+        X_START_POSITION + currentLineWidth,
+        yPosition
+      );
+      currentLineWidth += doc.getTextWidth("  before LiveLab on ");
+
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        lab["Event Start Date/Time"].split(" ")[0],
+        X_START_POSITION + currentLineWidth,
+        yPosition
+      );
+
+      yPosition += LINE_HEIGHT;
+    }
   });
+  addImageFooter();
 
-  // Deliverables
-  yPosition = Y_START_POSITION;
-  doc.addPage();
-  doc.setFontSize(HEADER_FONT_SIZE);
-  doc.setFont("helvetica", "bold");
-  doc.text("DM Part 1 Milestone Due Dates", 10, yPosition);
-  yPosition += 15;
-  doc.setFontSize(BODY_FONT_SIZE);
+  doc.save(`${sheet.split(".")[0].replace(/\[[^\]]*\]/g, "")}.pdf`);
+  console.info(`${sheet} saved as PDF!`);
+};
 
-  records.deliverables.slice(0, 12).forEach((deliverable, idx) => {
-    doc.setFont("helvetica", "bold");
-    console.log(deliverable);
-    let title = `${deliverable[
-      "Topic:    📅   LiveLab, 🌐  ICC Topic, 🎯  Milestone, or 🚀  Portfolio Project"
-    ]
-      .replace(/[^a-zA-Z0-9 ]/g, "")
-      .replace(/\s+/g, " ")
-      .trim()}`;
-    doc.text(title, X_START_POSITION, yPosition);
+const main = () => {
+  try {
+    fs.readdir(__dirname + "sheets", (err, sheets) => {
+      if (err) {
+        console.error(err);
+      } else {
+        sheets.forEach((sheet) => {
+          generatePDF(sheet);
+        });
+      }
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-    let titleWidth = doc.getTextWidth(title);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `  - ${deliverable["Event Start Date/Time"].replace(" ", " @ ")} CT`,
-      X_START_POSITION + titleWidth,
-      yPosition
-    );
-    yPosition += LINE_HEIGHT;
-  });
-
-  doc.save(`${sheetName.split(".")[0]}.pdf`);
-})();
+main();
