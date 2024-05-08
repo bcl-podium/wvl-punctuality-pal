@@ -61,7 +61,7 @@ const generatePDF = async (sheet) => {
   const doc = new jsPDF();
 
   const addImageFooter = () => {
-    const image = fs.readFileSync(__dirname + "gtx-stacked.png", "base64");
+    const image = fs.readFileSync(__dirname + "img/gtx-stacked.png", "base64");
     const imageData = `data:image/png;base64,${image}`;
     doc.addImage(
       imageData,
