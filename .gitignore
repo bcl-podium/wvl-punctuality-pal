@@ -1,4 +1,6 @@
 **/.DS_Store
 node_modules/
-sheets/
-pdf-out/
+pdf-out/*
+!pdf-out/.gitkeep 
+sheets/*
+!sheets/.gitkeep
